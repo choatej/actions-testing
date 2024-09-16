@@ -1,0 +1,36 @@
+name: Run Tests
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  check-for-test:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+          with:
+            fetch-depth: 2
+        - name: Check changed files
+          id: changed-files
+          run: |
+            if git diff --quiet HEAD~ HEAD ./src; then
+                echo "No changes in src."
+                echo "changes=false" >> $GITHUB_ENV
+            else
+                echo "Changes found in src."
+                echo "changes=true" >> $GITHUB_ENV
+            fi
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: check-for-test
+    if: ${{ env.changes == 'true' }}
+    steps:
+      - uses: ./.github/workflows/test_only_on_some_files.yaml
+  handle-result:
+    runs-on: ubuntu-latest
+    needs:
+        - check-for-test
+    if: ${{ env.changes == 'false' }}
+    steps:
+      - run: |
+          echo "No tests needed"
