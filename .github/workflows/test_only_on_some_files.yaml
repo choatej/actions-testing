@@ -1,20 +1,14 @@
 name: Test only on some files
 
 on:
-  push:
-    paths:
-      - 'src/**'
+  workflow_call:
+  workflow_dispatch:
 jobs:
   my-job:
     runs-on: ubuntu-latest
     steps:
         - uses: actions/checkout@v4
-        - name: Check for changes
-          id: changes
-          run: |
-            if git diff --quiet HEAD^ HEAD ./src; then
-              echo "No changes in src, exiting early"
-              exit 0
-            fi
+          with:
+            fetch-depth: 2
         - name: Run build steps
           run: echo "Running the build steps"
